@@ -141,6 +141,21 @@ def GetTrackingSavedInfo(pRefParcel):
     # End Test dataBase
 
 
+def insert_tracking(reference, destination, line_tracking):
+    #Define our connection string
+    conn_string = "host='localhost' dbname='vido' user='Lei' password=''"
+	# get a connection, if a connect cannot be made an exception will be raised here
+    conn = psycopg2.connect(conn_string)
+	# conn.cursor will return a cursor object, you can use this cursor to perform queries
+    cursor = conn.cursor()
+    # Execute our query
+	sql_str = " INSERT INTO polls_tracking VALUES ('" + reference + "', " + ")"
+    cursor.execute(sql_str)
+	
+	
+	parcel_ref, parcel_destination, my_date, line.parcelStatut, line.parcelLocation
+	
+	
 """
 主函数
 """
@@ -160,28 +175,25 @@ if __name__ == '__main__':
     #baseCon = BaseConnector('Lei', '', 'vido')
     #baseCon.connect()
 
-
-
-
-
     
     # 从网站找出所有包裹记录, 返回网站中所有记录行.
-    parcel_tracking = Tracker().run()
+    parcel_tracking_web = Tracker().run()
     
     # 从数据库读取记录
     parcel_tracking_saved = GetTrackingSavedInfo(parcel_tracking.refParcel)
 
-    # 对比网站里的记录和数据库中已经存储的记录，把新记录存在数据库中。
-    '''
-    if parcel_tracking is not None:
-        parcel_ref = parcel_tracking.refParcel
-        parcel_destination = parcel_tracking.destination
-        for line in parcel_tracking.lstTracking:
-            date_str = line.parcelDate
-            my_date = datetime.strptime(date_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+    # 对比网站中的记录和数据库中已经存储的记录，把新记录存在数据库中。
+    if parcel_tracking_web is not None:
+        parcel_ref = parcel_tracking_web.refParcel
+        parcel_destination = parcel_tracking_web.destination
+        for line in parcel_tracking_web.lstTracking:
+		    if not parcel_tracking_saved.containsTracking(line):
+			    insertTracking(parcel_ref, parcel_destination, line)
+            #date_str = line.parcelDate
+            #my_date = datetime.strptime(date_str, '%d/%m/%Y').strftime('%Y-%m-%d')
             #print(parcel_ref, my_date, line.parcelStatut, line.parcelLocation)
             #statut_bytes = line.parcelStatut.encode('utf8')
             #print(type(st))
-            baseCon.insert_parcel_tracking(parcel_ref, parcel_destination, my_date, line.parcelStatut, line.parcelLocation)
-            baseCon.display_record(None)
-    '''
+            #baseCon.insert_parcel_tracking(parcel_ref, parcel_destination, my_date, line.parcelStatut, line.parcelLocation)
+            #baseCon.display_record(None)
+    
