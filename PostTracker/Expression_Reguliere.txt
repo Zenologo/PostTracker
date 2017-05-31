@@ -1,0 +1,7 @@
+Expression Régulière: (<table.*?>(.+?)Résultats pour(.+?)</table>)
+
+line record:
+    <tr>(<td scope="row">((.|\w)+?))</tr>
+
+Value:
+    <p class="h5">((.|\w)*?)</p>
