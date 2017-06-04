@@ -1,5 +1,5 @@
 import logging
-
+from datetime import datetime
 
 class Tracking:
     def __init__(self, pParcelDate, pParcelStatut, pParcelLocation):
@@ -10,7 +10,7 @@ class Tracking:
 
 
 class ModelTrack:
-    def __init__(self, pRefParcel, pDestination=""):
+    def __init__(self, pRefParcel, pDestination):
         self.refParcel = pRefParcel
         self.lstTracking = []
         self.destination = pDestination
@@ -27,9 +27,17 @@ class ModelTrack:
         else:
             print("lstTrack is empty!")
 
+
+    '''
+    转换日期格式 法国->美国
+    '''
+    def convert_date_french(self, tracking_date):
+        return str(datetime.strptime(tracking_date, '%d/%m/%Y').date())
+
+
     def containsTracking(self, pTracking):
         for info in self.lstTracking :
-            if info.parcelDate == pTracking.parcelDate and \
+            if str(info.parcelDate) == self.convert_date_french(pTracking.parcelDate) and \
                 info.parcelStatut == pTracking.parcelStatut and \
                 info.parcelLocation == pTracking.parcelLocation :
                 return True
