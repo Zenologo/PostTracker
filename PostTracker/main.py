@@ -84,10 +84,8 @@ def ConfigSectionMap(section):
     return dict1
 
 
-"""
-连接数据库
-"""
 def ConnectDatabase():
+    """ 连接数据库 """
     #Define our connection string
     conn_string = "host='localhost' dbname='vido' user='Lei' password=''"
 	# print the connection string we will use to connect
@@ -143,13 +141,13 @@ def GetTrackingSavedInfo(pRefParcel):
     return cModelTrack
     # End Test dataBase
 
-'''
-转换日期格式 法国->美国
-'''
+
 def convert_date_french(tracking_date):
+    ''' 转换日期格式 法国->美国 '''
     return str(datetime.strptime(tracking_date, '%d/%m/%Y').date())
 
-def insert_tracking(reference, tracking_destination, tracking_status, tracking_location, tracking_date):
+def insert_tracking(ref, tracking_destination, tracking_status, \
+                    tracking_location, tracking_date):
     ''' Insert one line tracking info '''
     #Define our connection string
     conn_string = "host='localhost' dbname='vido' user='Lei' password=''"
@@ -158,10 +156,12 @@ def insert_tracking(reference, tracking_destination, tracking_status, tracking_l
 	# conn.cursor will return a cursor object, you can use this cursor to perform queries
     cursor = conn.cursor()
     # Execute our query
-    sql_str = " INSERT INTO polls_tracking (tracking_reference, tracking_destination, tracking_statut, tracking_location, tracking_date) "
+    sql_str = " INSERT INTO polls_tracking (tracking_reference, tracking_destination, "
+    sql_str += "tracking_statut, tracking_location, tracking_date) "
     sql_str += "VALUES (%s, %s, %s, %s, %s);"
     #print("insert sql: " + sql_str)
-    data_str = [reference, tracking_destination, tracking_status, tracking_location, convert_date_french(tracking_date)]
+    data_str = [ref, tracking_destination, tracking_status, tracking_location]
+    data_str.append(convert_date_french(tracking_date))
     #print(*data_str, sep=',')
     cursor.execute(sql_str, data_str)
     conn.commit()
@@ -182,13 +182,12 @@ def get_tracking_reference():
     cursor.execute(sql_str)
     # Retrieve the records from the database
     rows = cursor.fetchall()
-    list_reference = []
+    list_ref = []
     for row in rows:
-        list_reference.append(row[0])
-        print(row[0]);
+        list_ref.append(row[0])
     cursor.close()
     conn.close()
-    return list_reference
+    return list_ref
 
 
 if __name__ == '__main__':
