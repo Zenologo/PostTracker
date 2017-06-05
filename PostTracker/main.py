@@ -12,7 +12,7 @@ from datetime import datetime
 
 
 """
-包裹追踪类
+    包裹追踪类
 """
 class Tracker():
 
@@ -71,10 +71,8 @@ class Tracker():
             return cModelTrack
 
 
-"""
-读取配置文件
-"""
 def ConfigSectionMap(section):
+    ''' Read config file '''
     dict1=[]
     Config = configparser.ConfigParser()
     options = Config.options(section)
@@ -120,11 +118,8 @@ def ConnectDatabase():
     conn.close()
 
 
-'''
-获取数据库中的包裹信息
-'''
 def GetTrackingSavedInfo(pRefParcel):
-    # Test Get info from database
+    ''' Get Tracking info from DB '''
     #Define our connection string
     conn_string = "host='localhost' dbname='vido' user='Lei' password=''"
 	# print the connection string we will use to connect
@@ -158,6 +153,7 @@ def convert_date_french(tracking_date):
     return str(datetime.strptime(tracking_date, '%d/%m/%Y').date())
 
 def insert_tracking(reference, tracking_destination, tracking_status, tracking_location, tracking_date):
+    ''' Insert one line tracking info '''
     #Define our connection string
     conn_string = "host='localhost' dbname='vido' user='Lei' password=''"
 	# get a connection, if a connect cannot be made an exception will be raised here
@@ -174,13 +170,32 @@ def insert_tracking(reference, tracking_destination, tracking_status, tracking_l
     conn.commit()
     cursor.close()
     conn.close()
-    #cursor.commit()
 
 
-"""
-主函数
-"""
+def get_tracking_reference():
+    ''' Get all references (status != "delivered") '''
+    #Define our connection string
+    conn_string = "host='localhost' dbname='vido' user='Lei' password=''"
+	# get a connection, if a connect cannot be made an exception will be raised here
+    conn = psycopg2.connect(conn_string)
+	# conn.cursor will return a cursor object, you can use this cursor to perform queries
+    cursor = conn.cursor()
+    # Execute our query
+    sql_str = " SELECT Reference FROM polls_ WHERE Status = '';"
+    #print(*data_str, sep=',')
+    cursor.execute(sql_str)
+    cursor.close()
+    conn.close()
+    # Retrieve the records from the database
+    rows = cursor.fetchall()
+    list_reference = []
+    for row in rows:
+        list_reference.append(row[0])
+    return list_reference
+
+
 if __name__ == '__main__':
+    ''' 主函数 '''
     logging.basicConfig(filename='example.log',level=logging.DEBUG)
     #logging.basicConfig(handlers=[logging.FileHandler('example2.log', 'w', 'utf-8')], level=logging.DEBUG)
     logging.basicConfig(format='%(asctime)s %(message)s')
@@ -195,24 +210,28 @@ if __name__ == '__main__':
     #ConnectDatabase()
     #baseCon = BaseConnector('Lei', '', 'vido')
     #baseCon.connect()
-    reference = "EY216209619FR"
 
-    
-    # 从网站找出所有包裹记录, 返回网站中所有记录行.
-    parcel_tracking_web = Tracker().run(reference)
-    
-    # 从数据库读取记录
-    #print(parcel_tracking_web.refParcel)
-    parcel_tracking_saved = GetTrackingSavedInfo(parcel_tracking_web.refParcel)
+    list_reference = get_tracking_reference()
+    print("list_reference size: " + len(list_reference))
+    print(str(list_reference).strip('[]'))
+    for reference in list_reference:
+        reference = "EY216209619FR"
 
-    # 对比网站中的记录和数据库中已经存储的记录，把新记录存在数据库中。
-    if parcel_tracking_web is not None:
-        parcel_ref = parcel_tracking_web.refParcel
-        parcel_destination = parcel_tracking_web.destination
-        for line in parcel_tracking_web.lstTracking:
-            #print(parcel_tracking_saved.containsTracking(line))
-            if parcel_tracking_saved.containsTracking(line) == False:
-                insert_tracking(parcel_ref, parcel_destination, line.parcelStatut, line.parcelLocation, line.parcelDate)
+        # 从网站找出所有包裹记录, 返回网站中所有记录行.
+        parcel_tracking_web = Tracker().run(reference)
+    
+        # 从数据库读取记录
+        #print(parcel_tracking_web.refParcel)
+        parcel_tracking_saved = GetTrackingSavedInfo(parcel_tracking_web.refParcel)
+
+        # 对比网站中的记录和数据库中已经存储的记录，把新记录存在数据库中。
+        if parcel_tracking_web is not None:
+            parcel_ref = parcel_tracking_web.refParcel
+            parcel_destination = parcel_tracking_web.destination
+            for line in parcel_tracking_web.lstTracking:
+                #print(parcel_tracking_saved.containsTracking(line))
+                if parcel_tracking_saved.containsTracking(line) == False:
+                    insert_tracking(parcel_ref, parcel_destination, line.parcelStatut, line.parcelLocation, line.parcelDate)
                 
             #date_str = line.parcelDate
             #my_date = datetime.strptime(date_str, '%d/%m/%Y').strftime('%Y-%m-%d')
