@@ -11,11 +11,8 @@ from datetime import date
 from datetime import datetime
 
 
-"""
-    包裹追踪类
-"""
 class Tracker():
-
+    """ 包裹追踪类 """
     def run(self, reference):
         conn = http.client.HTTPConnection("www.laposte.fr")
         conn.request("GET", "/particulier/outils/suivre-vos-envois?code=" + reference)
@@ -181,16 +178,16 @@ def get_tracking_reference():
 	# conn.cursor will return a cursor object, you can use this cursor to perform queries
     cursor = conn.cursor()
     # Execute our query
-    sql_str = " SELECT Reference FROM polls_ WHERE Status = '';"
-    #print(*data_str, sep=',')
+    sql_str = " SELECT reference FROM polls_parcel WHERE Statut != '已签收' OR Statut != 'Delivered';"
     cursor.execute(sql_str)
-    cursor.close()
-    conn.close()
     # Retrieve the records from the database
     rows = cursor.fetchall()
     list_reference = []
     for row in rows:
         list_reference.append(row[0])
+        print(row[0]);
+    cursor.close()
+    conn.close()
     return list_reference
 
 
@@ -199,7 +196,7 @@ if __name__ == '__main__':
     logging.basicConfig(filename='example.log',level=logging.DEBUG)
     #logging.basicConfig(handlers=[logging.FileHandler('example2.log', 'w', 'utf-8')], level=logging.DEBUG)
     logging.basicConfig(format='%(asctime)s %(message)s')
-
+    
     # logging.debug('This message should go to the log file')
     # logging.info('So should this')
     # logging.warning('And this, too')
@@ -207,9 +204,6 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read("config.ini")
     sitePoste = config.get("La Poste", "site")
-    #ConnectDatabase()
-    #baseCon = BaseConnector('Lei', '', 'vido')
-    #baseCon.connect()
 
     list_reference = get_tracking_reference()
     print("list_reference size: " + len(list_reference))
@@ -219,7 +213,7 @@ if __name__ == '__main__':
 
         # 从网站找出所有包裹记录, 返回网站中所有记录行.
         parcel_tracking_web = Tracker().run(reference)
-    
+
         # 从数据库读取记录
         #print(parcel_tracking_web.refParcel)
         parcel_tracking_saved = GetTrackingSavedInfo(parcel_tracking_web.refParcel)
@@ -232,12 +226,3 @@ if __name__ == '__main__':
                 #print(parcel_tracking_saved.containsTracking(line))
                 if parcel_tracking_saved.containsTracking(line) == False:
                     insert_tracking(parcel_ref, parcel_destination, line.parcelStatut, line.parcelLocation, line.parcelDate)
-                
-            #date_str = line.parcelDate
-            #my_date = datetime.strptime(date_str, '%d/%m/%Y').strftime('%Y-%m-%d')
-            #print(parcel_ref, my_date, line.parcelStatut, line.parcelLocation)
-            #statut_bytes = line.parcelStatut.encode('utf8')
-            #print(type(st))
-            #baseCon.insert_parcel_tracking(parcel_ref, parcel_destination, my_date, line.parcelStatut, line.parcelLocation)
-            #baseCon.display_record(None)
-    
