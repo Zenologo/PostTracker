@@ -191,7 +191,6 @@ def get_tracking_reference():
 
 
 if __name__ == '__main__':
-    ''' 主函数 '''
     logging.basicConfig(filename='example.log',level=logging.DEBUG)
     #logging.basicConfig(handlers=[logging.FileHandler('example2.log', 'w', 'utf-8')], level=logging.DEBUG)
     logging.basicConfig(format='%(asctime)s %(message)s')
@@ -208,20 +207,21 @@ if __name__ == '__main__':
     print("list_reference size: " + len(list_reference))
     print(str(list_reference).strip('[]'))
     for reference in list_reference:
-        reference = "EY216209619FR"
-
+        #reference = "EY216209619FR"
+        logging.debug("reference: " + reference)
         # 从网站找出所有包裹记录, 返回网站中所有记录行.
         parcel_tracking_web = Tracker().run(reference)
-
         # 从数据库读取记录
         #print(parcel_tracking_web.refParcel)
         parcel_tracking_saved = GetTrackingSavedInfo(parcel_tracking_web.refParcel)
-
         # 对比网站中的记录和数据库中已经存储的记录，把新记录存在数据库中。
         if parcel_tracking_web is not None:
+            logging.debug("Analyze web info. Reference: " + reference)
             parcel_ref = parcel_tracking_web.refParcel
             parcel_destination = parcel_tracking_web.destination
             for line in parcel_tracking_web.lstTracking:
                 #print(parcel_tracking_saved.containsTracking(line))
                 if parcel_tracking_saved.containsTracking(line) == False:
                     insert_tracking(parcel_ref, parcel_destination, line.parcelStatut, line.parcelLocation, line.parcelDate)
+        else:
+            logging.debug("Can't get info from web. Reference: " + reference)
